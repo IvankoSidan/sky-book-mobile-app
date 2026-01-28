@@ -1,6 +1,6 @@
 plugins {
     id("com.android.application")
-    id("org.jetbrains.kotlin.android") version "1.9.23"
+    id("org.jetbrains.kotlin.android")
     id("kotlin-kapt")
     id("dagger.hilt.android.plugin")
     id("kotlin-parcelize")
@@ -43,6 +43,10 @@ android {
 
     kotlinOptions {
         jvmTarget = "17"
+        freeCompilerArgs = freeCompilerArgs + listOf(
+            "-opt-in=kotlin.RequiresOptIn",
+            "-Xskip-prerelease-check"
+        )
     }
 
     buildFeatures {
@@ -62,6 +66,18 @@ android {
 }
 
 dependencies {
+    implementation(project(":core:model"))
+    implementation(project(":core:common"))
+    implementation(project(":core:ui"))
+    implementation(project(":core:network"))
+    implementation(project(":core:datastore"))
+    implementation(project(":data"))
+    implementation(project(":navigation"))
+    implementation(project(":core:common-vm"))
+
+    implementation(project(":feature:auth"))
+    implementation(project(":feature:search"))
+    implementation(project(":feature:booking"))
     implementation("androidx.core:core-ktx:1.12.0")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0")
     implementation("androidx.activity:activity-compose:1.8.2")
@@ -79,45 +95,28 @@ dependencies {
     implementation("androidx.navigation:navigation-compose:2.7.7")
     implementation("androidx.compose.runtime:runtime-livedata")
 
-    implementation("com.google.android.gms:play-services-basement:18.3.0")
-    implementation("com.google.android.gms:play-services-auth:20.7.0")
-
-    implementation("androidx.datastore:datastore-preferences:1.0.0")
-    implementation("com.google.android.material:material:1.11.0")
-
-    implementation("com.github.bumptech.glide:glide:4.16.0")
-    implementation("io.coil-kt:coil-compose:2.5.0")
-    implementation("io.coil-kt:coil-svg:2.5.0")
-
-    implementation("com.google.accompanist:accompanist-pager:0.34.0")
-    implementation("com.google.accompanist:accompanist-pager-indicators:0.34.0")
-    implementation("com.google.accompanist:accompanist-systemuicontroller:0.34.0")
-    implementation("com.google.accompanist:accompanist-navigation-animation:0.34.0")
-
-    implementation("androidx.appcompat:appcompat:1.6.1")
-    implementation("androidx.constraintlayout:constraintlayout-compose:1.1.0")
-
+    // DI - Hilt
     implementation("com.google.dagger:hilt-android:2.50")
     kapt("com.google.dagger:hilt-android-compiler:2.50")
     implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
 
+    // Google Services (Auth)
+    implementation("com.google.android.gms:play-services-auth:20.7.0")
+
+    // Сеть
     implementation("com.squareup.retrofit2:retrofit:2.11.0")
     implementation("com.squareup.retrofit2:converter-gson:2.11.0")
     implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
 
-    implementation("org.jetbrains.kotlin:kotlin-stdlib:1.9.23")
-    implementation("com.google.code.gson:gson:2.10.1")
-
-    implementation("com.fasterxml.jackson.core:jackson-annotations:2.16.1")
-    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.16.1")
-
-    // Обновленные зависимости Stripe
+    // Stripe
     implementation("com.stripe:stripe-android:20.40.1")
-    implementation("com.stripe:financial-connections:20.40.1")
 
+    // Утилиты
+    implementation("com.google.accompanist:accompanist-systemuicontroller:0.34.0")
     implementation("io.github.muddz:styleabletoast:2.4.0")
-    implementation("io.github.muddz:styleabletoast:2.4.0")
+    implementation("io.coil-kt:coil-compose:2.5.0")
 
+    // Тестирование
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
