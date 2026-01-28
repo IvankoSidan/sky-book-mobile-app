@@ -14,38 +14,39 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 class RepositoryModule {
 
-    @Provides
     @Singleton
     fun provideAuthRepository(
         apiService: ApiService,
         authPreferences: AuthPreferences
     ): AuthRepository = AuthRepository(apiService, authPreferences)
 
-    @Provides
     @Singleton
     fun provideLocationRepository(
         apiService: ApiService
     ): LocationRepository = LocationRepository(apiService)
 
-    @Provides
     @Singleton
     fun provideFlightRepository(
         apiService: ApiService,
         authRepository: AuthRepository
     ): FlightRepository = FlightRepository(apiService, authRepository)
 
-    @Provides
     @Singleton
     fun providePaymentRepository(
         apiService: ApiService,
         authRepository: AuthRepository
     ): PaymentRepository = PaymentRepository(apiService, authRepository)
 
-    @Provides
     @Singleton
     fun provideNotificationRepository(
         apiService: ApiService,
         authRepository: AuthRepository
     ): NotificationRepository = NotificationRepository(apiService, authRepository)
+
+    @Singleton
+    fun provideBookingRepository(
+        apiService: ApiService,
+        authRepository: AuthRepository
+    ): BookingRepository = BookingRepository(apiService, authRepository)
 }
 

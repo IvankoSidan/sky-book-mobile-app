@@ -6,6 +6,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -17,6 +18,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -41,24 +43,30 @@ import com.wheezy.myjetpackproject.R
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.view.WindowCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import com.wheezy.myjetpackproject.Data.Enums.ThemeOption
 import com.wheezy.myjetpackproject.Data.Model.User
 import com.wheezy.myjetpackproject.UI.Components.AppNavGraph
 import com.wheezy.myjetpackproject.UI.Components.DropDownMenu
 import com.wheezy.myjetpackproject.UI.Components.GradientButton
+import com.wheezy.myjetpackproject.UI.Components.MyBottomBar
 import com.wheezy.myjetpackproject.UI.Components.PassengerCounter
+import com.wheezy.myjetpackproject.UI.Components.SideDrawer
 import com.wheezy.myjetpackproject.UI.Components.TopBar
 import com.wheezy.myjetpackproject.UI.Screens.DatePicker.DatePickerScreen
+import com.wheezy.myjetpackproject.UI.Theme.MyAppTheme
 import com.wheezy.myjetpackproject.ViewModel.AuthViewModel
 import com.wheezy.myjetpackproject.ViewModel.BookingViewModel
 import com.wheezy.myjetpackproject.ViewModel.FlightViewModel
 import com.wheezy.myjetpackproject.ViewModel.PaymentViewModel
 import com.wheezy.myjetpackproject.ViewModel.SearchParamsViewModel
+import com.wheezy.myjetpackproject.ViewModel.ThemeViewModel
 import com.wheezy.myjetpackproject.ViewModel.TopBarViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import io.github.muddz.styleabletoast.StyleableToast
@@ -72,24 +80,32 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             StatusTopBarColor()
-            val navController = rememberNavController()
+            val themeViewModel: ThemeViewModel = hiltViewModel()
+            val currentTheme by themeViewModel.currentTheme.collectAsState()
 
-            val authViewModel: AuthViewModel = hiltViewModel()
-            val flightViewModel: FlightViewModel = hiltViewModel()
-            val searchParamsViewModel: SearchParamsViewModel = hiltViewModel()
-            val bookingViewModel: BookingViewModel = hiltViewModel()
-            val paymentViewModel: PaymentViewModel = hiltViewModel()
-            val topBarViewModel: TopBarViewModel = hiltViewModel()
+            MyAppTheme(themeOption = currentTheme) {
+                val navController = rememberNavController()
+                val authViewModel: AuthViewModel = hiltViewModel()
+                val flightViewModel: FlightViewModel = hiltViewModel()
+                val searchParamsViewModel: SearchParamsViewModel = hiltViewModel()
+                val bookingViewModel: BookingViewModel = hiltViewModel()
+                val paymentViewModel: PaymentViewModel = hiltViewModel()
+                val topBarViewModel: TopBarViewModel = hiltViewModel()
 
-            AppNavGraph(
-                navController = navController,
-                authViewModel = authViewModel,
-                flightViewModel = flightViewModel,
-                searchParamsViewModel = searchParamsViewModel,
-                bookingViewModel = bookingViewModel,
-                paymentViewModel = paymentViewModel,
-                topBarViewModel = topBarViewModel
-            )
+                AppNavGraph(
+                    navController = navController,
+                    authViewModel = authViewModel,
+                    flightViewModel = flightViewModel,
+                    searchParamsViewModel = searchParamsViewModel,
+                    bookingViewModel = bookingViewModel,
+                    paymentViewModel = paymentViewModel,
+                    topBarViewModel = topBarViewModel,
+                    currentTheme = currentTheme,
+                    onThemeChanged = { theme ->
+                        themeViewModel.setTheme(theme)
+                    }
+                )
+            }
         }
     }
 }
@@ -100,7 +116,9 @@ fun MainScreen(
     authViewModel: AuthViewModel,
     flightViewModel: FlightViewModel,
     searchParamsViewModel: SearchParamsViewModel,
-    topBarViewModel: TopBarViewModel
+    topBarViewModel: TopBarViewModel,
+    currentTheme: ThemeOption,
+    onThemeChanged: (ThemeOption) -> Unit
 ) {
     val userState by authViewModel.user.collectAsState()
     val locations by flightViewModel.locations.collectAsState(initial = emptyList())
@@ -113,6 +131,8 @@ fun MainScreen(
     var adultPassenger by remember { mutableStateOf("0") }
     var childPassenger by remember { mutableStateOf("0") }
 
+    var isDrawerOpen by remember { mutableStateOf(false) }
+
     val context = LocalContext.current
 
     LaunchedEffect(Unit) {
@@ -122,128 +142,156 @@ fun MainScreen(
 
     StatusTopBarColor()
 
-    Scaffold(
-        topBar = {
-            TopBar(
-                user = userState,
-                viewModel = topBarViewModel,
-                onLogout = {
-                    authViewModel.logout()
-                    navController.navigate("login") {
-                        popUpTo("main") { inclusive = true }
-                    }
-                }
-            )
-        }
-    ) { paddingValues ->
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(colorResource(id = R.color.darkPurple2))
-                .padding(paddingValues)
-        ) {
-            item {
-                Column(
-                    modifier = Modifier
-                        .padding(32.dp)
-                        .background(
-                            colorResource(id = R.color.darkPurple),
-                            shape = RoundedCornerShape(20.dp)
+    SideDrawer(
+        isOpen = isDrawerOpen,
+        onClose = { isDrawerOpen = false },
+        currentTheme = currentTheme,
+        onThemeSelected = { theme ->
+            onThemeChanged(theme)
+        },
+        onLogout = {
+            authViewModel.logout()
+            navController.navigate("login") {
+                popUpTo(0) { inclusive = true }
+            }
+        },
+        onOpenBookingHistory = { navController.navigate("booking_history") }
+    ) {
+        Scaffold(
+            topBar = {
+                TopBar(
+                    user = userState,
+                    viewModel = topBarViewModel,
+                    onOpenDrawer = { isDrawerOpen = true }
+                )
+            },
+            bottomBar = { MyBottomBar(navController) }
+        ) { paddingValues ->
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(MaterialTheme.colorScheme.background)
+                    .padding(paddingValues)
+            ) {
+                item {
+                    Column(
+                        modifier = Modifier
+                            .padding(32.dp)
+                            .background(
+                                color = MaterialTheme.colorScheme.surface,
+                                shape = RoundedCornerShape(20.dp)
+                            )
+                            .fillMaxWidth()
+                            .padding(24.dp)
+                    ) {
+                        val locationNames = locations.map { it.name }
+
+                        YellowTitle(text = "From", color = MaterialTheme.colorScheme.primary)
+                        DropDownMenu(
+                            items = locationNames,
+                            loadingIcon = painterResource(id = R.drawable.from_ic),
+                            hint = "Select departure location",
+                            showLocationLoading = isLoadingLocations,
+                            onItemSelected = { from = it }
                         )
-                        .fillMaxWidth()
-                        .padding(24.dp)
-                ) {
-                    val locationNames = locations.map { it.name }
 
-                    YellowTitle(text = "From")
-                    DropDownMenu(
-                        items = locationNames,
-                        loadingIcon = painterResource(id = R.drawable.from_ic),
-                        hint = "Select departure location",
-                        showLocationLoading = isLoadingLocations,
-                        onItemSelected = { from = it }
-                    )
+                        Spacer(modifier = Modifier.height(16.dp))
 
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    YellowTitle(text = "To")
-                    DropDownMenu(
-                        items = locationNames,
-                        loadingIcon = painterResource(id = R.drawable.from_ic),
-                        hint = "Select destination",
-                        showLocationLoading = isLoadingLocations,
-                        onItemSelected = { to = it }
-                    )
-
-                    Spacer(modifier = Modifier.height(16.dp))
-                    YellowTitle(text = "Passengers")
-                    Row(modifier = Modifier.fillMaxWidth()) {
-                        PassengerCounter(
-                            title = "Adult",
-                            modifier = Modifier.weight(1f),
-                            onItemSelected = { adultPassenger = it }
+                        YellowTitle(text = "To", color = MaterialTheme.colorScheme.primary)
+                        DropDownMenu(
+                            items = locationNames,
+                            loadingIcon = painterResource(id = R.drawable.from_ic),
+                            hint = "Select destination",
+                            showLocationLoading = isLoadingLocations,
+                            onItemSelected = { to = it }
                         )
-                        Spacer(modifier = Modifier.width(16.dp))
-                        PassengerCounter(
-                            title = "Child",
-                            modifier = Modifier.weight(1f),
-                            onItemSelected = { childPassenger = it }
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        YellowTitle(text = "Passengers", color = MaterialTheme.colorScheme.primary)
+                        Row(modifier = Modifier.fillMaxWidth()) {
+                            PassengerCounter(
+                                title = "Adult",
+                                modifier = Modifier.weight(1f),
+                                onItemSelected = { adultPassenger = it }
+                            )
+                            Spacer(modifier = Modifier.width(16.dp))
+                            PassengerCounter(
+                                title = "Child",
+                                modifier = Modifier.weight(1f),
+                                onItemSelected = { childPassenger = it }
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        Row {
+                            YellowTitle(
+                                text = "Departure Date",
+                                modifier = Modifier.weight(1f),
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                            Spacer(modifier = Modifier.width(16.dp))
+                            YellowTitle(
+                                text = "Return Date",
+                                modifier = Modifier.weight(1f),
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                        DatePickerScreen(modifier = Modifier.weight(1f))
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        YellowTitle(text = "Class", color = MaterialTheme.colorScheme.primary)
+                        DropDownMenu(
+                            items = classItems,
+                            loadingIcon = painterResource(id = R.drawable.seat_black_ic),
+                            hint = "Select class",
+                            showLocationLoading = isLoadingLocations,
+                            onItemSelected = { classes = it }
+                        )
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        GradientButton(
+                            onClick = {
+                                val numPassenger = (adultPassenger.toIntOrNull() ?: 0) +
+                                        (childPassenger.toIntOrNull() ?: 0)
+
+                                if (from.isNotBlank() && to.isNotBlank() && numPassenger > 0) {
+                                    searchParamsViewModel.setParams(from, to, numPassenger)
+                                    navController.navigate("searchResult")
+                                } else {
+                                    StyleableToast.makeText(
+                                        context,
+                                        "Please select valid locations and at least one passenger",
+                                        R.style.errorToast
+                                    ).show()
+                                }
+                            },
+                            text = "Search"
                         )
                     }
-
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Row {
-                        YellowTitle(text = "Departure Date", Modifier.weight(1f))
-                        Spacer(modifier = Modifier.width(16.dp))
-                        YellowTitle(text = "Return Date", Modifier.weight(1f))
-                    }
-                    DatePickerScreen(Modifier.weight(1f))
-
-                    Spacer(modifier = Modifier.height(16.dp))
-                    YellowTitle(text = "Class")
-                    DropDownMenu(
-                        items = classItems,
-                        loadingIcon = painterResource(id = R.drawable.seat_black_ic),
-                        hint = "Select class",
-                        showLocationLoading = isLoadingLocations,
-                        onItemSelected = { classes = it }
-                    )
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    GradientButton(
-                        onClick = {
-                            val numPassenger = (adultPassenger.toIntOrNull() ?: 0) +
-                                    (childPassenger.toIntOrNull() ?: 0)
-
-                            if (from.isNotBlank() && to.isNotBlank() && numPassenger > 0) {
-                                searchParamsViewModel.setParams(from, to, numPassenger)
-                                navController.navigate("searchResult")
-                            } else {
-                                StyleableToast.makeText(
-                                    context,
-                                    "Please select valid locations and at least one passenger",
-                                    R.style.errorToast
-                                ).show()
-                            }
-                        },
-                        text = "Search"
-                    )
                 }
             }
         }
     }
 }
 
+
 @Composable
-fun YellowTitle(text: String, modifier: Modifier = Modifier) {
+fun YellowTitle(
+    text: String,
+    modifier: Modifier = Modifier,
+    color: Color = MaterialTheme.colorScheme.primary
+) {
     Text(
         text = text,
-        fontWeight = FontWeight.SemiBold,
-        color = colorResource(id = R.color.orange),
-        modifier = modifier
+        modifier = modifier,
+        style = MaterialTheme.typography.titleMedium.copy(color = color)
     )
 }
+
 
 @Composable
 fun SplashScreen(
@@ -262,73 +310,70 @@ fun SplashScreen(
 
     StatusTopBarColor()
 
-    ConstraintLayout(
+    Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.Black)
+            .background(MaterialTheme.colorScheme.background)
     ) {
-        val (backgroundImage, title, subtitle, startBtn) = createRefs()
-
+        // Background image
         Image(
             painter = painterResource(id = R.drawable.splash_bg),
             contentDescription = null,
             contentScale = ContentScale.Crop,
+            modifier = Modifier.fillMaxSize()
+        )
+
+        Column(
             modifier = Modifier
                 .fillMaxSize()
-                .constrainAs(backgroundImage) {
-                    top.linkTo(parent.top)
-                    bottom.linkTo(parent.bottom)
-                    start.linkTo(parent.start)
-                    end.linkTo(parent.end)
-                }
-        )
-
-        val styleText = buildAnnotatedString {
-            append("Your\n")
-            withStyle(style = SpanStyle(color = colorResource(id = R.color.orange))) {
-                append("Perfect Flight")
-            }
-        }
-
-        Text(
-            text = styleText,
-            fontSize = 53.sp,
-            fontWeight = FontWeight.Bold,
-            color = Color.White,
-            modifier = Modifier
-                .padding(horizontal = 16.dp)
-                .constrainAs(title) {
-                    top.linkTo(parent.top, margin = 64.dp)
-                    start.linkTo(parent.start)
-                }
-        )
-
-        Text(
-            text = stringResource(id = R.string.subtitle_splash),
-            fontSize = 16.sp,
-            fontWeight = FontWeight.SemiBold,
-            color = colorResource(id = R.color.orange),
-            modifier = Modifier
-                .padding(start = 16.dp, top = 8.dp)
-                .constrainAs(subtitle) {
-                    top.linkTo(title.bottom)
-                    start.linkTo(title.start)
-                }
-        )
-
-        Box(
-            modifier = Modifier
-                .padding(bottom = 48.dp)
-                .constrainAs(startBtn) {
-                    bottom.linkTo(parent.bottom)
-                    start.linkTo(parent.start)
-                    end.linkTo(parent.end)
-                }
+                .padding(horizontal = 24.dp),
+            verticalArrangement = Arrangement.SpaceBetween
         ) {
-            GradientButton(onClick = onGetStartedClick, text = "Get Started", padding = 32)
+            Column(
+                modifier = Modifier.padding(top = 80.dp)
+            ) {
+                val styleText = buildAnnotatedString {
+                    withStyle(style = SpanStyle(color = MaterialTheme.colorScheme.onBackground)) {
+                        append("Your\n")
+                    }
+                    withStyle(style = SpanStyle(color = MaterialTheme.colorScheme.tertiary)) {
+                        append("Perfect Flight")
+                    }
+                }
+
+                Text(
+                    text = styleText,
+                    fontSize = 42.sp,
+                    fontWeight = FontWeight.Bold,
+                    lineHeight = 48.sp
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                Text(
+                    text = stringResource(id = R.string.subtitle_splash),
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = MaterialTheme.colorScheme.tertiary
+                )
+            }
+
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 64.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                GradientButton(
+                    onClick = onGetStartedClick,
+                    text = "Get Started",
+                    padding = 32
+                )
+            }
         }
     }
 }
+
 
 @Composable
 fun StatusTopBarColor() {
@@ -341,5 +386,4 @@ fun StatusTopBarColor() {
         )
     }
 }
-
 

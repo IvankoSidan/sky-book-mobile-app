@@ -42,8 +42,6 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Notifications
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
@@ -64,7 +62,6 @@ import androidx.compose.ui.layout.positionInWindow
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
@@ -72,25 +69,26 @@ import coil.compose.AsyncImage
 import com.wheezy.myjetpackproject.Data.Model.Notification
 import com.wheezy.myjetpackproject.Data.Model.User
 import com.wheezy.myjetpackproject.R
+import com.wheezy.myjetpackproject.Utils.format
 import com.wheezy.myjetpackproject.ViewModel.TopBarViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.ui.graphics.ColorFilter
 
 @Composable
 fun TopBar(
     user: User? = null,
     viewModel: TopBarViewModel,
-    onLogout: () -> Unit = {}
+    onOpenDrawer: () -> Unit = {}
 ) {
     val notifications by viewModel.notifications.collectAsState()
     val unreadCount = viewModel.unreadCount
     val isLoading by viewModel.isLoading.collectAsState()
     var showDropdown by remember { mutableStateOf(false) }
-
     val profileSize = 60.dp
     val iconSize = 45.dp
 
@@ -107,11 +105,12 @@ fun TopBar(
                 .fillMaxWidth()
                 .wrapContentHeight()
         ) {
-            val (world, name, profile, notification, title, logoutButton) = createRefs()
+            val (world, name, profile, notification, title, menuButton) = createRefs()
 
             Image(
                 painter = painterResource(id = R.drawable.world),
                 contentDescription = null,
+                colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurface),
                 modifier = Modifier
                     .clickable { }
                     .constrainAs(world) {
@@ -151,19 +150,19 @@ fun TopBar(
             }
 
             IconButton(
-                onClick = onLogout,
+                onClick = { onOpenDrawer() },
                 modifier = Modifier
                     .size(iconSize)
-                    .constrainAs(logoutButton) {
+                    .constrainAs(menuButton) {
                         end.linkTo(notification.start)
                         top.linkTo(parent.top)
                         bottom.linkTo(parent.bottom)
                     }
             ) {
                 Icon(
-                    painter = painterResource(id = R.drawable.ic_logout),
-                    contentDescription = "Logout",
-                    tint = Color.White
+                    painter = painterResource(id = R.drawable.ic_menu),
+                    contentDescription = "Menu",
+                    tint = MaterialTheme.colorScheme.onSurface
                 )
             }
 
@@ -177,9 +176,7 @@ fun TopBar(
                     }
                     .clickable {
                         showDropdown = !showDropdown
-                        if (showDropdown) {
-                            viewModel.loadNotifications()
-                        }
+                        if (showDropdown) viewModel.loadNotifications()
                     }
                     .onGloballyPositioned { coordinates ->
                         bellPosition = coordinates.positionInWindow()
@@ -190,28 +187,30 @@ fun TopBar(
                     contentDescription = "Notifications",
                     modifier = Modifier.fillMaxSize()
                 )
+
                 if (unreadCount > 0) {
                     Box(
                         modifier = Modifier
                             .size(16.dp)
-                            .background(Color.Red, CircleShape)
+                            .background(MaterialTheme.colorScheme.error, CircleShape)
                             .align(Alignment.TopEnd),
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
                             text = unreadCount.toString(),
                             fontSize = 10.sp,
-                            color = Color.White,
+                            color = MaterialTheme.colorScheme.onError,
                             fontWeight = FontWeight.Bold
                         )
                     }
                 }
+
                 if (isLoading && showDropdown) {
                     CircularProgressIndicator(
                         modifier = Modifier
                             .size(20.dp)
                             .align(Alignment.Center),
-                        color = Color.White,
+                        color = MaterialTheme.colorScheme.primary,
                         strokeWidth = 2.dp
                     )
                 }
@@ -219,7 +218,7 @@ fun TopBar(
 
             Text(
                 text = user?.name ?: "Guest",
-                color = Color.White,
+                color = MaterialTheme.colorScheme.onSurface,
                 fontWeight = FontWeight.Bold,
                 fontSize = 14.sp,
                 modifier = Modifier
@@ -233,7 +232,7 @@ fun TopBar(
 
             Text(
                 text = stringResource(id = R.string.dashboard_title),
-                color = Color.White,
+                color = MaterialTheme.colorScheme.primary,
                 fontWeight = FontWeight.Bold,
                 fontSize = 25.sp,
                 modifier = Modifier.constrainAs(title) {
@@ -246,43 +245,24 @@ fun TopBar(
 
         AnimatedVisibility(
             visible = showDropdown,
-            enter = fadeIn(
-                animationSpec = tween(
-                    durationMillis = 400,
-                    delayMillis = 50,
-                    easing = LinearOutSlowInEasing
-                )
-            ) + scaleIn(
-                initialScale = 0.9f,
-                animationSpec = tween(
-                    durationMillis = 400,
-                    easing = FastOutSlowInEasing
-                )
-            ) + slideInVertically(
-                initialOffsetY = { -50 },
-                animationSpec = tween(
-                    durationMillis = 400,
-                    easing = FastOutSlowInEasing
-                )
-            ),
-            exit = fadeOut(
-                animationSpec = tween(
-                    durationMillis = 250,
-                    easing = FastOutLinearInEasing
-                )
-            ) + scaleOut(
-                targetScale = 0.95f,
-                animationSpec = tween(
-                    durationMillis = 250,
-                    easing = FastOutLinearInEasing
-                )
-            ) + slideOutVertically(
-                targetOffsetY = { -30 },
-                animationSpec = tween(
-                    durationMillis = 250,
-                    easing = FastOutLinearInEasing
-                )
-            ),
+            enter = fadeIn(animationSpec = tween(400, 50, LinearOutSlowInEasing)) +
+                    scaleIn(
+                        initialScale = 0.9f,
+                        animationSpec = tween(400, easing = FastOutSlowInEasing)
+                    ) +
+                    slideInVertically(
+                        initialOffsetY = { -50 },
+                        animationSpec = tween(400, easing = FastOutSlowInEasing)
+                    ),
+            exit = fadeOut(animationSpec = tween(250, easing = FastOutLinearInEasing)) +
+                    scaleOut(
+                        targetScale = 0.95f,
+                        animationSpec = tween(250, easing = FastOutLinearInEasing)
+                    ) +
+                    slideOutVertically(
+                        targetOffsetY = { -30 },
+                        animationSpec = tween(250, easing = FastOutLinearInEasing)
+                    ),
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 32.dp)
@@ -295,9 +275,7 @@ fun TopBar(
                 modifier = Modifier
                     .fillMaxWidth()
                     .wrapContentHeight()
-                    .animateContentSize(
-                        animationSpec = tween(durationMillis = 300)
-                    )
+                    .animateContentSize(tween(300))
             ) {
                 NotificationsDropdown(
                     notifications = notifications,
@@ -315,17 +293,12 @@ fun NotificationsDropdown(
     onClose: () -> Unit,
     onClearAll: () -> Unit = {}
 ) {
-    val purple = Color(0xFF6B23D7)
-    val grey = Color(0xFFBEBEBE)
-    val white = Color.White
-    val red = Color(0xFFFF5252)
-
     var showClearAllConfirmation by remember { mutableStateOf(false) }
 
     Card(
-        elevation = 8.dp,
+        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
         shape = RoundedCornerShape(16.dp),
-        backgroundColor = white
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(
@@ -335,9 +308,9 @@ fun NotificationsDropdown(
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(
-                        imageVector = Icons.Default.Notifications,
+                        Icons.Default.Notifications,
                         contentDescription = null,
-                        tint = purple,
+                        tint = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.size(22.dp)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
@@ -345,7 +318,7 @@ fun NotificationsDropdown(
                         text = "Notifications",
                         style = MaterialTheme.typography.titleMedium.copy(
                             fontWeight = FontWeight.Bold,
-                            color = Color.Black
+                            color = MaterialTheme.colorScheme.onSurface
                         )
                     )
                 }
@@ -361,17 +334,17 @@ fun NotificationsDropdown(
                             }
                         }) {
                             Icon(
-                                imageVector = Icons.Default.Delete,
+                                Icons.Default.Delete,
                                 contentDescription = "Clear all notifications",
-                                tint = red
+                                tint = MaterialTheme.colorScheme.error
                             )
                         }
                     }
                     IconButton(onClick = onClose) {
                         Icon(
-                            imageVector = Icons.Default.Close,
+                            Icons.Default.Close,
                             contentDescription = "Close notifications",
-                            tint = grey
+                            tint = MaterialTheme.colorScheme.outline
                         )
                     }
                 }
@@ -388,15 +361,17 @@ fun NotificationsDropdown(
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Icon(
-                            imageVector = Icons.Default.Check,
+                            Icons.Default.Check,
                             contentDescription = null,
-                            tint = grey,
+                            tint = MaterialTheme.colorScheme.outline,
                             modifier = Modifier.size(36.dp)
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
-                            text = "No new notifications 🎉",
-                            style = MaterialTheme.typography.bodyMedium.copy(color = grey)
+                            "No new notifications",
+                            style = MaterialTheme.typography.bodyMedium.copy(
+                                color = MaterialTheme.colorScheme.outline
+                            )
                         )
                     }
                 }
@@ -409,15 +384,17 @@ fun NotificationsDropdown(
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Icon(
-                            imageVector = Icons.Default.Delete,
+                            Icons.Default.Delete,
                             contentDescription = null,
-                            tint = red,
+                            tint = MaterialTheme.colorScheme.error,
                             modifier = Modifier.size(36.dp)
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
-                            text = "All notifications cleared",
-                            style = MaterialTheme.typography.bodyMedium.copy(color = grey)
+                            "All notifications cleared",
+                            style = MaterialTheme.typography.bodyMedium.copy(
+                                color = MaterialTheme.colorScheme.outline
+                            )
                         )
                     }
                 }
@@ -427,12 +404,17 @@ fun NotificationsDropdown(
                         notifications.forEach { notification ->
                             val isUnread = !notification.isRead
                             val backgroundColor =
-                                if (isUnread) Color(0xFFB091D5).copy(alpha = 0.2f) else Color.Transparent
+                                if (isUnread) MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
+                                else Color.Transparent
 
                             val (icon, iconTint) = when {
-                                "report" in notification.message.lowercase() -> Icons.Default.Assessment to Color(0xFFF8D503)
-                                "message" in notification.message.lowercase() -> Icons.Default.Email to Color(0xFF11D244)
-                                else -> Icons.Default.Info to Color(0xFFAC01B9)
+                                "report" in notification.message.lowercase() ->
+                                    Icons.Default.Assessment to MaterialTheme.colorScheme.tertiary
+
+                                "message" in notification.message.lowercase() ->
+                                    Icons.Default.Email to MaterialTheme.colorScheme.secondary
+
+                                else -> Icons.Default.Info to MaterialTheme.colorScheme.primary
                             }
 
                             Row(
@@ -443,7 +425,7 @@ fun NotificationsDropdown(
                                 verticalAlignment = Alignment.Top
                             ) {
                                 Icon(
-                                    imageVector = icon,
+                                    icon,
                                     contentDescription = null,
                                     tint = iconTint,
                                     modifier = Modifier.size(20.dp)
@@ -451,16 +433,18 @@ fun NotificationsDropdown(
                                 Spacer(modifier = Modifier.width(10.dp))
                                 Column {
                                     Text(
-                                        text = notification.message,
+                                        notification.message,
                                         style = MaterialTheme.typography.bodyMedium.copy(
                                             fontWeight = if (isUnread) FontWeight.SemiBold else FontWeight.Normal,
-                                            color = Color.Black
+                                            color = MaterialTheme.colorScheme.onSurface
                                         )
                                     )
                                     Spacer(modifier = Modifier.height(4.dp))
                                     Text(
-                                        text = notification.timestamp.format(),
-                                        style = MaterialTheme.typography.labelSmall.copy(color = grey)
+                                        notification.timestamp.format(),
+                                        style = MaterialTheme.typography.labelSmall.copy(
+                                            color = MaterialTheme.colorScheme.outline
+                                        )
                                     )
                                 }
                             }
@@ -470,32 +454,4 @@ fun NotificationsDropdown(
             }
         }
     }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun NotificationsDropdownPreview() {
-    val dummyNotifications = listOf(
-        Notification(message = "Your report is ready", isRead = false),
-        Notification(
-            message = "New message from John",
-            timestamp = LocalDateTime.now().minusHours(1),
-            isRead = true
-        ),
-        Notification(
-            message = "System update available",
-            timestamp = LocalDateTime.now().minusDays(1),
-            isRead = false
-        )
-    )
-
-    NotificationsDropdown(
-        notifications = dummyNotifications,
-        onClose = {}
-    )
-}
-
-fun LocalDateTime.format(): String {
-    val formatter = DateTimeFormatter.ofPattern("dd MMM yyyy, HH:mm")
-    return this.format(formatter)
 }

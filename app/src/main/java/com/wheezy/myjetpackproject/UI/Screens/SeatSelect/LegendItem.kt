@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Text
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -22,6 +23,8 @@ fun LegendItem(
     text: String,
     color: Color
 ) {
+    val textColor = MaterialTheme.colorScheme.onSurface
+
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier.padding(horizontal = 4.dp)
@@ -35,8 +38,8 @@ fun LegendItem(
         Spacer(modifier = Modifier.width(8.dp))
         Text(
             text = text,
-            fontSize = 12.sp,
-            color = Color.White
+            style = MaterialTheme.typography.bodySmall.copy(color = textColor)
         )
     }
 }
+

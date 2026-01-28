@@ -4,9 +4,7 @@ import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.BottomNavigation
 import androidx.compose.material.BottomNavigationItem
@@ -17,23 +15,17 @@ import androidx.compose.material.icons.filled.ConfirmationNumber
 import androidx.compose.material.icons.filled.EventSeat
 import androidx.compose.material.icons.filled.Flight
 import androidx.compose.material.icons.filled.Home
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.NavigationBarItemDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.wheezy.myjetpackproject.R
 import androidx.compose.ui.Alignment
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.wheezy.myjetpackproject.Data.Dto.BottomMenuItem
 
-@Composable
 fun prepareBottomMenu(): List<BottomMenuItem> {
     return listOf(
         BottomMenuItem("Home", Icons.Default.Home, "main"),
@@ -50,14 +42,16 @@ fun MyBottomBar(navController: NavHostController) {
     val currentRoute = navBackStackEntry?.destination?.route
 
     BottomNavigation(
-        backgroundColor = colorResource(id = R.color.darkPurple),
+        backgroundColor = MaterialTheme.colorScheme.surface,
         elevation = 4.dp,
         modifier = Modifier.height(48.dp)
     ) {
         bottomMenuItemList.forEach { item ->
             val isSelected = currentRoute == item.route
             val tint by animateColorAsState(
-                targetValue = if (isSelected) colorResource(id = R.color.orange) else Color.Gray,
+                targetValue = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface.copy(
+                    alpha = 0.5f
+                ),
                 animationSpec = tween(durationMillis = 300)
             )
 
@@ -92,8 +86,8 @@ fun MyBottomBar(navController: NavHostController) {
                         )
                     }
                 },
-                selectedContentColor = colorResource(id = R.color.orange),
-                unselectedContentColor = Color.Gray,
+                selectedContentColor = MaterialTheme.colorScheme.primary,
+                unselectedContentColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
                 alwaysShowLabel = true
             )
         }

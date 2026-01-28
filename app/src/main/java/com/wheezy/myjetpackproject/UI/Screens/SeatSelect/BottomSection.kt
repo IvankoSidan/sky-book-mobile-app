@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Text
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -30,19 +31,21 @@ fun BottomSection(
     onConfirmClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val colors = MaterialTheme.colorScheme
+
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .background(colorResource(id = R.color.darkPurple2))
+            .background(colors.surface)
             .padding(vertical = 16.dp)
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceEvenly
         ) {
-            LegendItem("Available", colorResource(id = R.color.green))
-            LegendItem("Selected", colorResource(id = R.color.orange))
-            LegendItem("Unavailable", colorResource(id = R.color.grey))
+            LegendItem("Available", colors.primary)
+            LegendItem("Selected", colors.tertiary)
+            LegendItem("Unavailable", colors.surfaceVariant)
         }
 
         Spacer(modifier = Modifier.height(8.dp))
@@ -57,23 +60,25 @@ fun BottomSection(
             Column {
                 Text(
                     text = "$seatCount seats selected",
-                    color = Color.White,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 14.sp
+                    style = MaterialTheme.typography.bodyMedium.copy(
+                        color = colors.onSurface,
+                        fontWeight = FontWeight.Bold
+                    )
                 )
                 Text(
                     text = if (selectedSeats.isBlank()) "-" else selectedSeats,
-                    color = Color.White,
-                    fontWeight = FontWeight.Medium,
-                    fontSize = 14.sp
+                    style = MaterialTheme.typography.bodySmall.copy(
+                        color = colors.onSurface
+                    )
                 )
             }
 
             Text(
                 text = "$${totalPrice.setScale(0, RoundingMode.HALF_UP)}",
-                color = colorResource(id = R.color.orange),
-                fontWeight = FontWeight.SemiBold,
-                fontSize = 25.sp
+                style = MaterialTheme.typography.headlineSmall.copy(
+                    color = colors.tertiary,
+                    fontWeight = FontWeight.SemiBold
+                )
             )
         }
 

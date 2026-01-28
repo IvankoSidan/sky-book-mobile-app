@@ -1,5 +1,6 @@
 package com.wheezy.myjetpackproject.ViewModel
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.wheezy.myjetpackproject.Data.Dto.UserLoginDto
@@ -92,19 +93,35 @@ class AuthViewModel @Inject constructor(
         if (_loginState.value is AuthState.Loading) return
 
         _loginState.value = AuthState.Loading
+        Log.d("AuthViewModel", "🔑 Login started for email=$email")
+
         viewModelScope.launch {
             try {
                 val response = repository.login(UserLoginDto(email, password))
+                Log.d(
+                    "AuthViewModel",
+                    "📡 Login response: code=${response.code()}, body=${response.body()}"
+                )
+
                 if (response.isSuccessful && response.body() != null) {
                     val authResponse = response.body()!!
                     authPreferences.saveAuthData(authResponse.token, authResponse.user.id)
                     _user.value = authResponse.user.toDomain()
                     _loginState.value = AuthState.Success(authResponse)
+                    Log.d(
+                        "AuthViewModel",
+                        "✅ Login success: userId=${authResponse.user.id}, token=${
+                            authResponse.token.take(20)
+                        }..."
+                    )
                 } else {
-                    _loginState.value = AuthState.Error(response.message() ?: "Login failed")
+                    val msg = response.message() ?: "Login failed"
+                    _loginState.value = AuthState.Error(msg)
+                    Log.w("AuthViewModel", "⚠️ Login error: $msg")
                 }
             } catch (e: Exception) {
                 _loginState.value = AuthState.Error(e.message ?: "Unknown error")
+                Log.e("AuthViewModel", "💥 Login exception", e)
             }
         }
     }
@@ -113,23 +130,39 @@ class AuthViewModel @Inject constructor(
         if (_registerState.value is AuthState.Loading) return
 
         _registerState.value = AuthState.Loading
+        Log.d("AuthViewModel", "📝 Registration started for email=$email, name=$name")
+
         viewModelScope.launch {
             try {
                 val response = repository.register(UserRegisterDto(email, password, name))
+                Log.d(
+                    "AuthViewModel",
+                    "📡 Register response: code=${response.code()}, body=${response.body()}"
+                )
+
                 if (response.isSuccessful && response.body() != null) {
                     val authResponse = response.body()!!
                     authPreferences.saveAuthData(authResponse.token, authResponse.user.id)
                     _user.value = authResponse.user.toDomain()
                     _registerState.value = AuthState.Success(authResponse)
+                    Log.d(
+                        "AuthViewModel",
+                        "✅ Registration success: userId=${authResponse.user.id}, token=${
+                            authResponse.token.take(20)
+                        }..."
+                    )
                 } else {
-                    _registerState.value =
-                        AuthState.Error(response.message() ?: "Registration failed")
+                    val msg = response.message() ?: "Registration failed"
+                    _registerState.value = AuthState.Error(msg)
+                    Log.w("AuthViewModel", "⚠️ Registration error: $msg")
                 }
             } catch (e: Exception) {
                 _registerState.value = AuthState.Error(e.message ?: "Unknown error")
+                Log.e("AuthViewModel", "💥 Registration exception", e)
             }
         }
     }
+
 
     fun googleAuth(token: String) {
         if (_googleAuthState.value is AuthState.Loading) return

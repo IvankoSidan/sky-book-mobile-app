@@ -1,8 +1,10 @@
 package com.wheezy.myjetpackproject.Network
 
 import com.wheezy.myjetpackproject.Data.Dto.AuthResponse
+import com.wheezy.myjetpackproject.Data.Dto.BookingDetailsDTO
 import com.wheezy.myjetpackproject.Data.Dto.BookingRequestDto
 import com.wheezy.myjetpackproject.Data.Dto.BookingResponseDTO
+import com.wheezy.myjetpackproject.Data.Dto.BookingStatusUpdateRequest
 import com.wheezy.myjetpackproject.Data.Dto.CreateNotificationRequest
 import com.wheezy.myjetpackproject.Data.Dto.GoogleAuthDto
 import com.wheezy.myjetpackproject.Data.Dto.NotificationDTO
@@ -114,4 +116,21 @@ interface ApiService {
         @Header("Authorization") bearer: String,
         @Body request: PaymentSheetRequest
     ): Response<PaymentSheetResponseDTO>
+
+    @GET("/api/bookings/my")
+    suspend fun getMyBookings(
+        @Header("Authorization") bearer: String
+    ): Response<List<BookingDetailsDTO>>
+
+    @PUT("bookings/{bookingId}/status")
+    suspend fun updateBookingStatus(
+        @Path("bookingId") bookingId: Long,
+        @Body request: BookingStatusUpdateRequest
+    ): Response<Unit>
+
+    @POST("bookings/{id}/cancel")
+    suspend fun cancelBooking(@Header("Authorization") bearer: String, @Path("id") id: Long): Response<Unit>
+
+    @DELETE("bookings/{id}")
+    suspend fun deleteBooking(@Header("Authorization") bearer: String, @Path("id") id: Long): Response<Unit>
 }

@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Text
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -47,13 +48,12 @@ fun TicketDetailContent(
         flightModel.price.multiply(BigDecimal(selectedSeats.size))
     }
 
-
     Column(
         modifier = modifier
             .padding(24.dp)
             .fillMaxWidth()
             .background(
-                color = colorResource(id = R.color.lightPurple),
+                color = MaterialTheme.colorScheme.surface,
                 shape = RoundedCornerShape(20.dp)
             )
     ) {
@@ -82,7 +82,7 @@ fun TicketDetailContent(
                 text = flightModel.arriveTime,
                 fontSize = 12.sp,
                 fontWeight = FontWeight.Bold,
-                color = colorResource(id = R.color.darkPurple2),
+                color = MaterialTheme.colorScheme.onPrimaryContainer,
                 modifier = Modifier.constrainAs(arrivalText) {
                     top.linkTo(logo.bottom, margin = 8.dp)
                     centerHorizontallyTo(parent)
@@ -104,7 +104,7 @@ fun TicketDetailContent(
                 text = flightModel.departureCity,
                 fontSize = 14.sp,
                 textAlign = TextAlign.Center,
-                color = Color.Black,
+                color = MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier.constrainAs(fromCity) {
                     top.linkTo(lineImg.top)
                     end.linkTo(lineImg.start)
@@ -117,7 +117,7 @@ fun TicketDetailContent(
                 text = flightModel.departureShort,
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color.Black,
+                color = MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier.constrainAs(fromShort) {
                     top.linkTo(fromCity.bottom)
                     bottom.linkTo(lineImg.bottom)
@@ -129,7 +129,7 @@ fun TicketDetailContent(
                 text = flightModel.arrivalCity,
                 fontSize = 14.sp,
                 textAlign = TextAlign.Center,
-                color = Color.Black,
+                color = MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier.constrainAs(toCity) {
                     top.linkTo(lineImg.top)
                     start.linkTo(lineImg.end)
@@ -142,7 +142,7 @@ fun TicketDetailContent(
                 text = flightModel.arrivalShort,
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color.Black,
+                color = MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier.constrainAs(toShort) {
                     top.linkTo(toCity.bottom)
                     bottom.linkTo(lineImg.bottom)
@@ -151,44 +151,54 @@ fun TicketDetailContent(
             )
         }
 
-        // 🔷 Основные параметры
         Row(modifier = Modifier
             .fillMaxWidth()
             .padding(16.dp)) {
             Column(modifier = Modifier.weight(1f)) {
-                Text(text = "From", color = Color.Black)
+                Text(
+                    text = "From",
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
                 Text(
                     text = flightModel.departureCity,
                     fontWeight = FontWeight.Bold,
-                    color = Color.Black
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 Spacer(modifier = Modifier.height(16.dp))
-                Text(text = "Date", color = Color.Black)
+                Text(
+                    text = "Date",
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
                 Text(
                     text = flightModel.flightDate,
                     fontWeight = FontWeight.Bold,
-                    color = Color.Black
+                    color = MaterialTheme.colorScheme.onSurface
                 )
             }
 
             Column(modifier = Modifier.weight(1f)) {
-                Text(text = "To", color = Color.Black)
+                Text(
+                    text = "To",
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
                 Text(
                     text = flightModel.arrivalCity,
                     fontWeight = FontWeight.Bold,
-                    color = Color.Black
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 Spacer(modifier = Modifier.height(16.dp))
-                Text(text = "Time", color = Color.Black)
+                Text(
+                    text = "Time",
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
                 Text(
                     text = flightModel.departureTime,
                     fontWeight = FontWeight.Bold,
-                    color = Color.Black
+                    color = MaterialTheme.colorScheme.onSurface
                 )
             }
         }
 
-        // 🔷 Разделительная линия
         Image(
             painter = painterResource(id = R.drawable.dash_line),
             contentDescription = null,
@@ -196,39 +206,50 @@ fun TicketDetailContent(
             contentScale = ContentScale.FillWidth
         )
 
-        // 🔷 Подробности билета
         Row(modifier = Modifier
             .fillMaxWidth()
             .padding(16.dp)) {
             Column(modifier = Modifier.weight(1f)) {
-                Text(text = "Class", color = Color.Black)
+                Text(
+                    text = "Class",
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
                 Text(
                     text = flightModel.classSeat,
                     fontWeight = FontWeight.Bold,
-                    color = Color.Black
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 Spacer(modifier = Modifier.height(16.dp))
-                Text(text = "Seats", color = Color.Black)
+                Text(
+                    text = "Seats",
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
                 Text(
                     text = selectedSeats.joinToString { it.name },
                     fontWeight = FontWeight.Bold,
-                    color = Color.Black
+                    color = MaterialTheme.colorScheme.onSurface
                 )
             }
 
             Column(modifier = Modifier.weight(1f)) {
-                Text(text = "Airline", color = Color.Black)
+                Text(
+                    text = "Airline",
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
                 Text(
                     text = flightModel.airlineName,
                     fontWeight = FontWeight.Bold,
-                    color = Color.Black
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 Spacer(modifier = Modifier.height(16.dp))
-                Text(text = "Price", color = Color.Black)
+                Text(
+                    text = "Price",
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
                 Text(
                     text = String.format("$%.2f", totalPrice),
                     fontWeight = FontWeight.Bold,
-                    color = Color.Black
+                    color = MaterialTheme.colorScheme.onSurface
                 )
             }
 
@@ -248,7 +269,6 @@ fun TicketDetailContent(
             contentScale = ContentScale.FillWidth
         )
 
-        // 🔷 Баркод снизу
         Image(
             painter = painterResource(id = R.drawable.barcode),
             contentDescription = null,

@@ -4,6 +4,7 @@ import android.app.Activity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.runtime.Composable
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
@@ -21,7 +22,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -43,7 +43,17 @@ import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
+
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Divider
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedTextFieldDefaults
 
 @Composable
 fun RegisterPageScreen(
@@ -95,7 +105,7 @@ fun RegisterPageScreen(
         }
     }
 
-    Box(modifier = Modifier.fillMaxSize()) {
+    Box(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
         Image(
             painter = painterResource(id = R.drawable.shape),
             contentDescription = null,
@@ -115,19 +125,19 @@ fun RegisterPageScreen(
             Icon(
                 painter = painterResource(id = R.drawable.ic_logo),
                 contentDescription = null,
-                tint = colorResource(id = R.color.purple),
+                tint = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.size(64.dp)
             )
             Text(
                 "SkyBook",
-                fontSize = 32.sp,
-                fontWeight = FontWeight.Bold,
-                color = colorResource(id = R.color.pink)
+                style = MaterialTheme.typography.headlineMedium.copy(
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.secondary
+                )
             )
             Text(
                 "Find your pass",
-                fontSize = 18.sp,
-                color = colorResource(id = R.color.pink)
+                style = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.secondary)
             )
         }
 
@@ -140,9 +150,10 @@ fun RegisterPageScreen(
         ) {
             Text(
                 "Register",
-                fontSize = 28.sp,
-                fontWeight = FontWeight.Bold,
-                color = colorResource(id = R.color.purple)
+                style = MaterialTheme.typography.headlineSmall.copy(
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary
+                )
             )
             Spacer(Modifier.height(16.dp))
 
@@ -150,11 +161,16 @@ fun RegisterPageScreen(
                 value = name,
                 onValueChange = { name = it },
                 label = { Text("Name") },
-                leadingIcon = { Icon(Icons.Default.Person, contentDescription = null) },
+                leadingIcon = { Icon(Icons.Default.Person, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant) },
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(16.dp)
+                shape = RoundedCornerShape(16.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                    unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                    cursorColor = MaterialTheme.colorScheme.primary
+                )
             )
 
             Spacer(Modifier.height(12.dp))
@@ -163,7 +179,7 @@ fun RegisterPageScreen(
                 value = email,
                 onValueChange = { email = it },
                 label = { Text("Email") },
-                leadingIcon = { Icon(Icons.Default.Email, contentDescription = null) },
+                leadingIcon = { Icon(Icons.Default.Email, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant) },
                 singleLine = true,
                 isError = email.isNotBlank() && !AuthValidator.isEmailValid(email),
                 keyboardOptions = KeyboardOptions(
@@ -171,7 +187,12 @@ fun RegisterPageScreen(
                     imeAction = ImeAction.Next
                 ),
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(16.dp)
+                shape = RoundedCornerShape(16.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                    unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                    cursorColor = MaterialTheme.colorScheme.primary
+                )
             )
 
             Spacer(Modifier.height(12.dp))
@@ -180,12 +201,13 @@ fun RegisterPageScreen(
                 value = password,
                 onValueChange = { password = it },
                 label = { Text("Password") },
-                leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null) },
+                leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant) },
                 trailingIcon = {
                     IconButton(onClick = { showPassword = !showPassword }) {
                         Icon(
                             imageVector = if (showPassword) Icons.Default.VisibilityOff else Icons.Default.Visibility,
-                            contentDescription = null
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 },
@@ -203,13 +225,18 @@ fun RegisterPageScreen(
                     }
                 }),
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(16.dp)
+                shape = RoundedCornerShape(16.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                    unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                    cursorColor = MaterialTheme.colorScheme.primary
+                )
             )
 
             Spacer(Modifier.height(16.dp))
 
             errorMessage?.let {
-                Text(it, color = Color.Red, fontSize = 12.sp)
+                Text(it, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
                 Spacer(Modifier.height(8.dp))
             }
 
@@ -223,17 +250,21 @@ fun RegisterPageScreen(
             )
 
             Spacer(Modifier.height(16.dp))
-            Divider(modifier = Modifier.fillMaxWidth(), thickness = 1.dp)
+            Divider(
+                modifier = Modifier.fillMaxWidth(),
+                thickness = 1.dp,
+                color = MaterialTheme.colorScheme.outline
+            )
             Spacer(Modifier.height(16.dp))
 
             Button(
                 onClick = { launcher.launch(googleClient.signInIntent) },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .border(1.dp, colorResource(id = R.color.grey), RoundedCornerShape(16.dp)),
-                elevation = ButtonDefaults.elevation(0.dp),
-                colors = ButtonDefaults.buttonColors(backgroundColor = Color.White),
-                shape = RoundedCornerShape(16.dp)
+                    .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(16.dp)),
+                shape = RoundedCornerShape(16.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.surface),
+                elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp)
             ) {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_google),
@@ -241,18 +272,17 @@ fun RegisterPageScreen(
                     modifier = Modifier.size(20.dp)
                 )
                 Spacer(Modifier.width(8.dp))
-                Text("Continue with Google", color = Color.Black)
+                Text("Continue with Google", color = MaterialTheme.colorScheme.onSurface)
             }
 
             Spacer(Modifier.height(24.dp))
 
             TextButton(onClick = onNavigateBack) {
-                Text("Already have an account? Sign In", color = colorResource(id = R.color.purple))
+                Text("Already have an account? Sign In", color = MaterialTheme.colorScheme.primary)
             }
 
             Spacer(Modifier.height(32.dp))
         }
     }
 }
-
 

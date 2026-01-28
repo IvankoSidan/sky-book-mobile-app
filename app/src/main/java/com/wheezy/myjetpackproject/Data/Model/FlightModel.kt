@@ -14,15 +14,14 @@ data class FlightModel(
     val flightDate: String,
     val departureCity: String,
     val departureShort: String,
-    val totalSeats: Int,
+    val totalSeats: Int = 0,
     var price: BigDecimal,
     var passenger: String = "",
-    val reservedSeats: String,
+    val reservedSeats: String = "",
     val departureTime: String,
     val arrivalCity: String,
     val arrivalShort: String
-) : Parcelable
-{
+) : Parcelable {
     val fullLogoUrl: String
         get() = "https://skyflightbooking.ru/api/logo/$airlineLogo"
 }

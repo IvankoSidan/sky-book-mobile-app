@@ -3,11 +3,19 @@ package com.wheezy.myjetpackproject.UI.Screens.SeatSelect
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.Text
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
@@ -21,51 +29,40 @@ import com.wheezy.myjetpackproject.R
 
 @Composable
 fun TopSection(
-    modifier: Modifier,
+    modifier: Modifier = Modifier,
     onBackClick: () -> Unit
 ) {
-    ConstraintLayout(
+    val colors = MaterialTheme.colorScheme
+
+    Box(
         modifier = modifier
-            .fillMaxSize()
-            .background(color = colorResource(id = R.color.darkPurple2))
+            .fillMaxWidth()
             .padding(top = 36.dp, start = 16.dp, end = 16.dp)
     ) {
-        val (backBtn, headerTitle, worldImg) = createRefs()
+        Row(
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                painter = painterResource(R.drawable.back),
+                contentDescription = "Back",
+                tint = colors.onSurface,
+                modifier = Modifier
+                    .size(40.dp)
+                    .clickable { onBackClick() }
+            )
 
-        Image(
-            painter = painterResource(id = R.drawable.back),
-            contentDescription = null,
-            modifier = Modifier
-                .size(50.dp)
-                .clickable { onBackClick() }
-                .constrainAs(backBtn) {
-                    top.linkTo(parent.top, margin = 8.dp)
-                    start.linkTo(parent.start)
-                }
-        )
+            Spacer(modifier = Modifier.width(8.dp))
 
-        Text(
-            text = "Select Seats",
-            textAlign = TextAlign.Center,
-            fontWeight = FontWeight.Bold,
-            fontSize = 18.sp,
-            color = Color.White,
-            modifier = Modifier
-                .padding(start = 8.dp)
-                .constrainAs(headerTitle) {
-                    start.linkTo(backBtn.end, margin = 8.dp)
-                    top.linkTo(backBtn.top)
-                    bottom.linkTo(backBtn.bottom)
-                }
-        )
-
-        Image(
-            painter = painterResource(id = R.drawable.world),
-            contentDescription = null,
-            modifier = Modifier.constrainAs(worldImg) {
-                top.linkTo(parent.top)
-                end.linkTo(parent.end)
-            }
-        )
+            Text(
+                text = "Select Seats",
+                textAlign = TextAlign.Center,
+                style = MaterialTheme.typography.titleMedium.copy(
+                    fontWeight = FontWeight.Bold,
+                    color = colors.onSurface
+                )
+            )
+        }
     }
 }
+
+

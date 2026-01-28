@@ -4,6 +4,7 @@ import android.app.Activity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -41,7 +42,16 @@ import com.wheezy.myjetpackproject.Utils.AuthValidator
 import com.wheezy.myjetpackproject.ViewModel.AuthViewModel
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Divider
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedTextFieldDefaults
 
 @Composable
 fun LoginPageScreen(
@@ -73,7 +83,8 @@ fun LoginPageScreen(
             try {
                 val account = task.getResult(ApiException::class.java)
                 account.idToken?.let { viewModel.googleAuth(it) }
-            } catch (_: ApiException) { }
+            } catch (_: ApiException) {
+            }
         }
     }
 
@@ -93,8 +104,9 @@ fun LoginPageScreen(
         }
     }
 
-    Box(modifier = Modifier.fillMaxSize()) {
-        // Background
+    Box(modifier = Modifier
+        .fillMaxSize()
+        .background(MaterialTheme.colorScheme.background)) {
         Image(
             painter = painterResource(id = R.drawable.shape),
             contentDescription = null,
@@ -105,7 +117,6 @@ fun LoginPageScreen(
                 .align(Alignment.TopCenter)
         )
 
-        // Header
         Column(
             modifier = Modifier
                 .align(Alignment.TopCenter)
@@ -115,23 +126,22 @@ fun LoginPageScreen(
             Icon(
                 painter = painterResource(id = R.drawable.ic_logo),
                 contentDescription = null,
-                tint = colorResource(id = R.color.purple),
+                tint = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.size(64.dp)
             )
             Text(
                 "SkyBook",
-                fontSize = 32.sp,
-                fontWeight = FontWeight.Bold,
-                color = colorResource(id = R.color.pink)
+                style = MaterialTheme.typography.headlineMedium.copy(
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.secondary
+                )
             )
             Text(
                 "Find your pass",
-                fontSize = 18.sp,
-                color = colorResource(id = R.color.pink)
+                style = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.secondary)
             )
         }
 
-        // Login form
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -141,9 +151,10 @@ fun LoginPageScreen(
         ) {
             Text(
                 "Login",
-                fontSize = 28.sp,
-                fontWeight = FontWeight.Bold,
-                color = colorResource(id = R.color.purple)
+                style = MaterialTheme.typography.headlineSmall.copy(
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary
+                )
             )
             Spacer(Modifier.height(16.dp))
 
@@ -151,7 +162,13 @@ fun LoginPageScreen(
                 value = email,
                 onValueChange = { email = it },
                 label = { Text("Email") },
-                leadingIcon = { Icon(Icons.Default.Email, contentDescription = null) },
+                leadingIcon = {
+                    Icon(
+                        Icons.Default.Email,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                },
                 singleLine = true,
                 isError = email.isNotBlank() && !AuthValidator.isEmailValid(email),
                 keyboardOptions = KeyboardOptions(
@@ -159,7 +176,12 @@ fun LoginPageScreen(
                     imeAction = ImeAction.Next
                 ),
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(16.dp)
+                shape = RoundedCornerShape(16.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                    unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                    cursorColor = MaterialTheme.colorScheme.primary
+                )
             )
 
             Spacer(Modifier.height(12.dp))
@@ -168,12 +190,19 @@ fun LoginPageScreen(
                 value = password,
                 onValueChange = { password = it },
                 label = { Text("Password") },
-                leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null) },
+                leadingIcon = {
+                    Icon(
+                        Icons.Default.Lock,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                },
                 trailingIcon = {
                     IconButton(onClick = { showPassword = !showPassword }) {
                         Icon(
                             imageVector = if (showPassword) Icons.Default.VisibilityOff else Icons.Default.Visibility,
-                            contentDescription = null
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 },
@@ -183,13 +212,21 @@ fun LoginPageScreen(
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                 keyboardActions = KeyboardActions(
                     onDone = {
-                        if (AuthValidator.isEmailValid(email) && AuthValidator.isPasswordValid(password)) {
+                        if (AuthValidator.isEmailValid(email) && AuthValidator.isPasswordValid(
+                                password
+                            )
+                        ) {
                             viewModel.login(email.trim(), password)
                         }
                     }
                 ),
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(16.dp)
+                shape = RoundedCornerShape(16.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                    unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                    cursorColor = MaterialTheme.colorScheme.primary
+                )
             )
 
             Spacer(Modifier.height(12.dp))
@@ -200,16 +237,24 @@ fun LoginPageScreen(
             ) {
                 Checkbox(
                     checked = rememberMe,
-                    onCheckedChange = { rememberMe = it }
+                    onCheckedChange = { rememberMe = it },
+                    colors = CheckboxDefaults.colors(
+                        checkedColor = MaterialTheme.colorScheme.primary,
+                        uncheckedColor = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 )
                 Spacer(Modifier.width(4.dp))
-                Text("Remember me", color = colorResource(id = R.color.grey))
+                Text("Remember me", color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
 
             Spacer(Modifier.height(16.dp))
 
             errorMessage?.let {
-                Text(it, color = Color.Red, fontSize = 12.sp)
+                Text(
+                    it,
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodySmall
+                )
                 Spacer(Modifier.height(8.dp))
             }
 
@@ -222,17 +267,21 @@ fun LoginPageScreen(
             )
 
             Spacer(Modifier.height(16.dp))
-            Divider(modifier = Modifier.fillMaxWidth(), thickness = 1.dp)
+            Divider(
+                modifier = Modifier.fillMaxWidth(),
+                thickness = 1.dp,
+                color = MaterialTheme.colorScheme.outline
+            )
             Spacer(Modifier.height(16.dp))
 
             Button(
                 onClick = { launcher.launch(googleClient.signInIntent) },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .border(1.dp, colorResource(id = R.color.grey), RoundedCornerShape(16.dp)),
+                    .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(16.dp)),
                 shape = RoundedCornerShape(16.dp),
-                colors = ButtonDefaults.buttonColors(backgroundColor = colorResource(id = R.color.white)),
-                elevation = ButtonDefaults.elevation(0.dp)
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.surface),
+                elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp)
             ) {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_google),
@@ -243,7 +292,7 @@ fun LoginPageScreen(
                 Text(
                     "Continue with Google",
                     fontWeight = FontWeight.Bold,
-                    color = colorResource(id = R.color.black)
+                    color = MaterialTheme.colorScheme.onSurface
                 )
             }
 
@@ -252,7 +301,7 @@ fun LoginPageScreen(
             TextButton(onClick = onNavigateToRegister) {
                 Text(
                     "Don't have an account? Register",
-                    color = colorResource(id = R.color.purple)
+                    color = MaterialTheme.colorScheme.primary
                 )
             }
 
@@ -260,4 +309,7 @@ fun LoginPageScreen(
         }
     }
 }
+
+
+
 
