@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Text
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -32,7 +33,6 @@ import coil.compose.AsyncImage
 import com.wheezy.myjetpackproject.Data.Model.FlightModel
 import com.wheezy.myjetpackproject.R
 
-
 @Composable
 fun FlightItem(
     item: FlightModel,
@@ -45,7 +45,7 @@ fun FlightItem(
             .fillMaxWidth()
             .padding(start = 16.dp, top = 8.dp, end = 16.dp, bottom = 8.dp)
             .background(
-                color = colorResource(id = R.color.lightPurple),
+                color = MaterialTheme.colorScheme.surfaceVariant,
                 shape = RoundedCornerShape(15.dp)
             )
             .clickable { onFlightClick(item) }
@@ -79,7 +79,7 @@ fun FlightItem(
             textAlign = TextAlign.Center,
             fontSize = 12.sp,
             fontWeight = FontWeight.Bold,
-            color = colorResource(id = R.color.darkPurple2),
+            color = MaterialTheme.colorScheme.primary,
             modifier = Modifier
                 .padding(top = 8.dp)
                 .constrainAs(timeTxt) {
@@ -104,7 +104,7 @@ fun FlightItem(
         Text(
             text = item.departureCity,
             fontSize = 14.sp,
-            color = Color.Black,
+            color = MaterialTheme.colorScheme.onBackground,
             maxLines = 2,
             softWrap = true,
             overflow = TextOverflow.Clip,
@@ -123,7 +123,7 @@ fun FlightItem(
             text = item.departureShort,
             fontSize = 18.sp,
             fontWeight = FontWeight.Bold,
-            color = Color.Black,
+            color = MaterialTheme.colorScheme.onBackground,
             modifier = Modifier.constrainAs(fromShort) {
                 top.linkTo(fromCity.bottom)
                 bottom.linkTo(airplaneIcon.bottom)
@@ -135,7 +135,7 @@ fun FlightItem(
         Text(
             text = item.arrivalCity,
             fontSize = 14.sp,
-            color = Color.Black,
+            color = MaterialTheme.colorScheme.onBackground,
             maxLines = 2,
             softWrap = true,
             overflow = TextOverflow.Clip,
@@ -154,7 +154,7 @@ fun FlightItem(
             text = item.arrivalShort,
             fontSize = 18.sp,
             fontWeight = FontWeight.Bold,
-            color = Color.Black,
+            color = MaterialTheme.colorScheme.onBackground,
             modifier = Modifier.constrainAs(toShort) {
                 top.linkTo(toCity.bottom)
                 bottom.linkTo(airplaneIcon.bottom)
@@ -194,7 +194,7 @@ fun FlightItem(
             text = "%.2f $".format(item.price),
             fontSize = 25.sp,
             fontWeight = FontWeight.Bold,
-            color = colorResource(id = R.color.orange),
+            color = MaterialTheme.colorScheme.tertiary,
             modifier = Modifier
                 .padding(end = 16.dp)
                 .constrainAs(priceTxt) {
@@ -208,7 +208,7 @@ fun FlightItem(
             text = item.classSeat,
             fontSize = 15.sp,
             fontWeight = FontWeight.Bold,
-            color = colorResource(id = R.color.darkPurple2),
+            color = MaterialTheme.colorScheme.primary,
             modifier = Modifier
                 .padding(start = 8.dp)
                 .constrainAs(classTxt) {
@@ -219,4 +219,5 @@ fun FlightItem(
         )
     }
 }
+
 

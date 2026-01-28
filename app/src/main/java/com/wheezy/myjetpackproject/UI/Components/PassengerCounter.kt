@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Text
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -42,7 +43,7 @@ fun PassengerCounter(
             .height(60.dp)
             .padding(top = 8.dp)
             .background(
-                color = colorResource(R.color.lightPurple),
+                color = MaterialTheme.colorScheme.surfaceVariant,
                 shape = RoundedCornerShape(10.dp)
             ),
         contentAlignment = Alignment.Center
@@ -74,7 +75,7 @@ fun PassengerCounter(
             ) {
                 Text(
                     text = "-",
-                    color = Color.Black,
+                    color = MaterialTheme.colorScheme.onSurface,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold
                 )
@@ -82,7 +83,7 @@ fun PassengerCounter(
 
             Text(
                 text = "$passengerCount $title",
-                color = Color.Black,
+                color = MaterialTheme.colorScheme.onSurface,
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(horizontal = 8.dp)
@@ -100,7 +101,7 @@ fun PassengerCounter(
             ) {
                 Text(
                     text = "+",
-                    color = Color.Black,
+                    color = MaterialTheme.colorScheme.onSurface,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold
                 )

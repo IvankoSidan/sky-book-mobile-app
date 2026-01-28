@@ -4,11 +4,16 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.Text
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
@@ -24,19 +29,22 @@ fun TicketDetailHeader(
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val colors = MaterialTheme.colorScheme
+
     ConstraintLayout(
         modifier = modifier
-            .fillMaxSize()
-            .background(color = colorResource(id = R.color.darkPurple2))
+            .fillMaxWidth()
             .padding(top = 36.dp, start = 16.dp, end = 16.dp)
     ) {
-        val (backBtn, headerTitle, worldImg) = createRefs()
+        val (backBtn, headerTitle) = createRefs()
 
-        Image(
-            painter = painterResource(id = R.drawable.back),
-            contentDescription = null,
+        Icon(
+            painter = painterResource(R.drawable.back),
+            contentDescription = "Back",
+            tint = colors.onSurface,
             modifier = Modifier
-                .size(50.dp)
+                .size(40.dp)
+                .clip(CircleShape)
                 .clickable { onBackClick() }
                 .constrainAs(backBtn) {
                     top.linkTo(parent.top, margin = 8.dp)
@@ -47,25 +55,16 @@ fun TicketDetailHeader(
         Text(
             text = "Select Seats",
             textAlign = TextAlign.Center,
-            fontWeight = FontWeight.Bold,
-            fontSize = 18.sp,
-            color = Color.White,
+            style = MaterialTheme.typography.titleMedium.copy(
+                fontWeight = FontWeight.Bold,
+                color = colors.onSurface
+            ),
             modifier = Modifier
-                .padding(start = 8.dp)
                 .constrainAs(headerTitle) {
                     start.linkTo(backBtn.end, margin = 8.dp)
                     top.linkTo(backBtn.top)
                     bottom.linkTo(backBtn.bottom)
                 }
-        )
-
-        Image(
-            painter = painterResource(id = R.drawable.world),
-            contentDescription = null,
-            modifier = Modifier.constrainAs(worldImg) {
-                top.linkTo(parent.top)
-                end.linkTo(parent.end)
-            }
         )
     }
 }

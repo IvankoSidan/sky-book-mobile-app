@@ -28,8 +28,10 @@ import androidx.navigation.navArgument
 import androidx.navigation.navDeepLink
 import com.wheezy.myjetpackproject.Activities.MainScreen
 import com.wheezy.myjetpackproject.Activities.SplashScreen
+import com.wheezy.myjetpackproject.Data.Enums.ThemeOption
 import com.wheezy.myjetpackproject.UI.Screens.Auth.LoginPageScreen
 import com.wheezy.myjetpackproject.UI.Screens.Auth.RegisterPageScreen
+import com.wheezy.myjetpackproject.UI.Screens.BookingHistrory.BookingHistoryScreen
 import com.wheezy.myjetpackproject.UI.Screens.SearchResult.ItemListScreen
 import com.wheezy.myjetpackproject.UI.Screens.SeatSelect.SeatListScreen
 import com.wheezy.myjetpackproject.UI.Screens.TicketDetail.TicketDetailScreen
@@ -49,108 +51,111 @@ fun AppNavGraph(
     searchParamsViewModel: SearchParamsViewModel,
     bookingViewModel: BookingViewModel,
     paymentViewModel: PaymentViewModel,
-    topBarViewModel: TopBarViewModel
+    topBarViewModel: TopBarViewModel,
+    currentTheme: ThemeOption,
+    onThemeChanged: (ThemeOption) -> Unit
 ) {
     val userState = authViewModel.user.collectAsState().value
     val startDestination = if (userState == null) "splash" else "main"
 
-    val bottomBarRoutes = listOf("main", "searchResult", "selectSeat", "ticketDetail")
-    val navBackStackEntry by navController.currentBackStackEntryAsState()
-    val currentRoute = navBackStackEntry?.destination?.route
-    val showBottomBar = currentRoute in bottomBarRoutes
-
-    Scaffold(
-        bottomBar = {
-            if (showBottomBar) MyBottomBar(navController)
+    NavHost(
+        navController = navController,
+        startDestination = startDestination,
+        modifier = Modifier.fillMaxSize()
+    ) {
+        composable("splash") {
+            SplashScreen(
+                userState = userState,
+                onGetStartedClick = {
+                    navController.navigate(if (userState != null) "main" else "login") {
+                        popUpTo("splash") { inclusive = true }
+                    }
+                },
+                onAutoNavigate = {
+                    navController.navigate("main") {
+                        popUpTo("splash") { inclusive = true }
+                    }
+                }
+            )
         }
-    ) { innerPadding ->
-        NavHost(
-            navController = navController,
-            startDestination = startDestination,
-            modifier = Modifier.padding(innerPadding)
-        ) {
-            composable("splash") {
-                SplashScreen(
-                    userState = userState,
-                    onGetStartedClick = {
-                        navController.navigate(if (userState != null) "main" else "login") {
-                            popUpTo("splash") { inclusive = true }
-                        }
-                    },
-                    onAutoNavigate = {
-                        navController.navigate("main") {
-                            popUpTo("splash") { inclusive = true }
-                        }
+
+        composable("register") {
+            RegisterPageScreen(
+                onNavigateBack = {
+                    navController.navigate("login") {
+                        popUpTo("register") { inclusive = true }
                     }
-                )
-            }
-
-            composable("register") {
-                RegisterPageScreen(
-                    onNavigateBack = {
-                        navController.navigate("login") {
-                            popUpTo("register") { inclusive = true }
-                        }
-                    },
-                    onRegisterSuccess = {
-                        navController.navigate("main") {
-                            popUpTo("register") { inclusive = true }
-                        }
+                },
+                onRegisterSuccess = {
+                    navController.navigate("main") {
+                        popUpTo("register") { inclusive = true }
                     }
-                )
-            }
+                }
+            )
+        }
 
-            composable("login") {
-                LoginPageScreen(
-                    onNavigateToRegister = {
-                        navController.navigate("register") {
-                            popUpTo("login") { inclusive = true }
-                        }
-                    },
-                    onLoginSuccess = {
-                        navController.navigate("main") {
-                            popUpTo("login") { inclusive = true }
-                        }
+        composable("login") {
+            LoginPageScreen(
+                onNavigateToRegister = {
+                    navController.navigate("register") {
+                        popUpTo("login") { inclusive = true }
                     }
-                )
-            }
+                },
+                onLoginSuccess = {
+                    navController.navigate("main") {
+                        popUpTo("login") { inclusive = true }
+                    }
+                }
+            )
+        }
 
-            composable("main") {
-                MainScreen(
-                    navController = navController,
-                    authViewModel = authViewModel,
-                    flightViewModel = flightViewModel,
-                    searchParamsViewModel = searchParamsViewModel,
-                    topBarViewModel = topBarViewModel
-                )
-            }
+        composable("main") {
+            MainScreen(
+                navController = navController,
+                authViewModel = authViewModel,
+                flightViewModel = flightViewModel,
+                searchParamsViewModel = searchParamsViewModel,
+                topBarViewModel = topBarViewModel,
+                currentTheme = currentTheme,
+                onThemeChanged = onThemeChanged
+            )
+        }
 
-            composable("searchResult") {
-                ItemListScreen(
-                    navController = navController,
-                    flightViewModel = flightViewModel,
-                    searchParamsViewModel = searchParamsViewModel
-                )
-            }
+        composable("searchResult") {
+            ItemListScreen(
+                navController = navController,
+                flightViewModel = flightViewModel,
+                searchParamsViewModel = searchParamsViewModel
+            )
+        }
 
-            composable("selectSeat") {
-                SeatListScreen(
-                    navController = navController,
-                    flightViewModel = flightViewModel,
-                    bookingViewModel = bookingViewModel,
-                    onBackClick = { navController.popBackStack() }
-                )
-            }
+        composable("selectSeat") {
+            SeatListScreen(
+                navController = navController,
+                flightViewModel = flightViewModel,
+                bookingViewModel = bookingViewModel,
+                onBackClick = { navController.popBackStack() }
+            )
+        }
 
-            composable("ticketDetail") {
-                TicketDetailScreen(
-                    navController = navController,
-                    bookingViewModel = bookingViewModel,
-                    paymentViewModel = paymentViewModel,
-                    topBarViewModel = topBarViewModel,
-                    onBackClick = { navController.popBackStack() }
-                )
-            }
+        composable("ticketDetail") {
+            TicketDetailScreen(
+                navController = navController,
+                bookingViewModel = bookingViewModel,
+                paymentViewModel = paymentViewModel,
+                topBarViewModel = topBarViewModel,
+                onBackClick = { navController.popBackStack() }
+            )
+        }
+
+        composable("booking_history") {
+            BookingHistoryScreen(
+                navController = navController,
+                viewModel = bookingViewModel,
+                paymentViewModel = paymentViewModel,
+                topBarViewModel = topBarViewModel
+            )
         }
     }
 }
+

@@ -10,11 +10,16 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -27,9 +32,12 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.wheezy.myjetpackproject.Data.Enums.SeatStatus
 import com.wheezy.myjetpackproject.R
+import com.wheezy.myjetpackproject.UI.Components.CustomSnackbarHost
+import com.wheezy.myjetpackproject.UI.Components.WorldBackground
 import com.wheezy.myjetpackproject.ViewModel.BookingViewModel
 import com.wheezy.myjetpackproject.ViewModel.FlightViewModel
 import io.github.muddz.styleabletoast.StyleableToast
+import kotlinx.coroutines.launch
 
 
 @Composable
@@ -39,145 +47,166 @@ fun SeatListScreen(
     bookingViewModel: BookingViewModel,
     onBackClick: () -> Unit
 ) {
-    val context = LocalContext.current
-
+    val colors = MaterialTheme.colorScheme
     val flightModel by flightViewModel.selectedFlight.collectAsState()
     val seatList by flightViewModel.seatList.collectAsState()
     val selectedSeats by flightViewModel.selectedSeats.collectAsState()
     val totalPrice by flightViewModel.totalPrice.collectAsState()
     val reservedSeats by flightViewModel.reservedSeats.collectAsState()
 
+    val snackbarHostState = remember { SnackbarHostState() }
+    val coroutineScope = rememberCoroutineScope()
+
     LaunchedEffect(flightModel?.flightId) {
-        flightModel?.flightId?.let {
-            flightViewModel.fetchReservedSeats(it)
-        }
+        flightModel?.flightId?.let { flightViewModel.fetchReservedSeats(it) }
     }
 
-    if (flightModel == null) {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(colorResource(R.color.darkPurple2)),
-            contentAlignment = Alignment.Center
-        ) {
-            CircularProgressIndicator(color = Color.White)
-        }
-        return
-    }
-
-    ConstraintLayout(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(colorResource(R.color.darkPurple2))
-    ) {
-        val (topSection, middleSection, bottomSection) = createRefs()
-
-        TopSection(
-            modifier = Modifier.constrainAs(topSection) {
-                top.linkTo(parent.top)
-                start.linkTo(parent.start)
-                end.linkTo(parent.end)
-            },
-            onBackClick = onBackClick
-        )
-
-        ConstraintLayout(
-            modifier = Modifier
-                .padding(top = 100.dp)
-                .constrainAs(middleSection) {
-                    top.linkTo(parent.top)
-                    start.linkTo(parent.start)
-                    end.linkTo(parent.end)
-                }
-        ) {
-            val (airplane, seatGrid) = createRefs()
-
-            Image(
-                painter = painterResource(R.drawable.airple_seat),
-                contentDescription = null,
-                modifier = Modifier.constrainAs(airplane) {
-                    top.linkTo(parent.top)
-                    start.linkTo(parent.start)
-                    end.linkTo(parent.end)
-                }
-            )
-
-            LazyVerticalGrid(
-                columns = GridCells.Fixed(7),
+    Scaffold(
+        snackbarHost = { CustomSnackbarHost(hostState = snackbarHostState) },
+        containerColor = colors.surface
+    ) { padding ->
+        if (flightModel == null) {
+            Box(
                 modifier = Modifier
-                    .padding(top = 240.dp, start = 64.dp, end = 64.dp)
-                    .constrainAs(seatGrid) {
+                    .fillMaxSize()
+                    .padding(padding),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator(color = colors.primary)
+            }
+            return@Scaffold
+        }
+
+        Box(modifier = Modifier.fillMaxSize()) {
+            WorldBackground(modifier = Modifier.align(Alignment.TopCenter))
+
+            ConstraintLayout(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding)
+            ) {
+                val (topSection, middleSection, bottomSection) = createRefs()
+
+                TopSection(
+                    modifier = Modifier.constrainAs(topSection) {
                         top.linkTo(parent.top)
                         start.linkTo(parent.start)
                         end.linkTo(parent.end)
-                    }
-            ) {
-                items(seatList) { seat ->
-                    val status = when {
-                        reservedSeats.contains(seat.name) -> SeatStatus.UNAVAILABLE
-                        selectedSeats.any { it.name == seat.name } -> SeatStatus.SELECTED
-                        seat.status == SeatStatus.EMPTY -> SeatStatus.EMPTY
-                        else -> SeatStatus.AVAILABLE
-                    }
+                    },
+                    onBackClick = onBackClick
+                )
 
-                    SeatItem(
-                        seat = seat.copy(status = status),
-                        onSeatClick = {
-                            when (status) {
-                                SeatStatus.AVAILABLE, SeatStatus.SELECTED -> {
-                                    flightViewModel.selectSeat(seat, flightModel!!)
-                                }
-                                SeatStatus.UNAVAILABLE -> Toast.makeText(
-                                    context,
-                                    "Seat ${seat.name} is already booked",
-                                    Toast.LENGTH_SHORT
-                                ).show()
-                                else -> {}
-                            }
+                ConstraintLayout(
+                    modifier = Modifier
+                        .padding(top = 100.dp)
+                        .constrainAs(middleSection) {
+                            top.linkTo(parent.top)
+                            start.linkTo(parent.start)
+                            end.linkTo(parent.end)
+                        }
+                ) {
+                    val (airplane, seatGrid) = createRefs()
+
+                    Image(
+                        painter = painterResource(R.drawable.airple_seat),
+                        contentDescription = null,
+                        modifier = Modifier.constrainAs(airplane) {
+                            top.linkTo(parent.top)
+                            start.linkTo(parent.start)
+                            end.linkTo(parent.end)
                         }
                     )
-                }
-            }
-        }
 
-        BottomSection(
-            seatCount = selectedSeats.size,
-            selectedSeats = selectedSeats.joinToString { it.name },
-            totalPrice = totalPrice,
-            onConfirmClick = {
-                if (selectedSeats.isNotEmpty()) {
-                    flightViewModel.createBooking(flightModel!!, selectedSeats) { success, bookingId ->
-                        if (success) {
-                            bookingViewModel.setFlight(flightModel!!)
-                            bookingViewModel.setSelectedSeats(selectedSeats)
-                            bookingViewModel.setBookingId(bookingId)
-                            navController.navigate("ticketDetail") {
-                                popUpTo("seatList") { saveState = true }
+                    LazyVerticalGrid(
+                        columns = GridCells.Fixed(7),
+                        modifier = Modifier
+                            .padding(top = 240.dp, start = 64.dp, end = 64.dp)
+                            .constrainAs(seatGrid) {
+                                top.linkTo(parent.top)
+                                start.linkTo(parent.start)
+                                end.linkTo(parent.end)
                             }
-                        } else {
-                            StyleableToast.makeText(
-                                context,
-                                "Booking error",
-                                R.style.errorToast
-                            ).show()
+                    ) {
+                        items(seatList) { seat ->
+                            val status = when {
+                                reservedSeats.contains(seat.name) -> SeatStatus.UNAVAILABLE
+                                selectedSeats.any { it.name == seat.name } -> SeatStatus.SELECTED
+                                seat.status == SeatStatus.EMPTY -> SeatStatus.EMPTY
+                                else -> SeatStatus.AVAILABLE
+                            }
+
+                            SeatItem(
+                                seat = seat.copy(status = status),
+                                onSeatClick = {
+                                    when (status) {
+                                        SeatStatus.AVAILABLE, SeatStatus.SELECTED -> flightViewModel.selectSeat(
+                                            seat,
+                                            flightModel!!
+                                        )
+
+                                        SeatStatus.UNAVAILABLE -> coroutineScope.launch {
+                                            snackbarHostState.showSnackbar(
+                                                "Seat ${seat.name} is already booked",
+                                                duration = SnackbarDuration.Short
+                                            )
+                                        }
+
+                                        else -> {}
+                                    }
+                                }
+                            )
                         }
                     }
-                } else {
-                    StyleableToast.makeText(
-                        context,
-                        "Select seats",
-                        R.style.errorToast
-                    ).show()
                 }
-            },
-            modifier = Modifier.constrainAs(bottomSection) {
-                bottom.linkTo(parent.bottom)
-                start.linkTo(parent.start)
-                end.linkTo(parent.end)
+
+                BottomSection(
+                    seatCount = selectedSeats.size,
+                    selectedSeats = selectedSeats.joinToString { it.name },
+                    totalPrice = totalPrice,
+                    onConfirmClick = {
+                        if (selectedSeats.isNotEmpty()) {
+                            flightViewModel.createBooking(
+                                flightModel!!,
+                                selectedSeats
+                            ) { success, bookingId ->
+                                if (success) {
+                                    bookingViewModel.setFlight(flightModel!!)
+                                    bookingViewModel.setSelectedSeats(selectedSeats)
+                                    bookingViewModel.setBookingId(bookingId)
+                                    navController.navigate("ticketDetail") {
+                                        popUpTo("seatList") { saveState = true }
+                                    }
+                                } else {
+                                    coroutineScope.launch {
+                                        snackbarHostState.showSnackbar(
+                                            "Booking failed",
+                                            duration = SnackbarDuration.Short
+                                        )
+                                    }
+                                }
+                            }
+                        } else {
+                            coroutineScope.launch {
+                                snackbarHostState.showSnackbar(
+                                    "Select seats",
+                                    duration = SnackbarDuration.Short
+                                )
+                            }
+                        }
+                    },
+                    modifier = Modifier.constrainAs(bottomSection) {
+                        bottom.linkTo(parent.bottom)
+                        start.linkTo(parent.start)
+                        end.linkTo(parent.end)
+                    }
+                )
             }
-        )
+        }
     }
 }
+
+
+
 
 
 

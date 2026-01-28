@@ -116,6 +116,7 @@ dependencies {
     implementation("com.stripe:financial-connections:20.40.1")
 
     implementation("io.github.muddz:styleabletoast:2.4.0")
+    implementation("io.github.muddz:styleabletoast:2.4.0")
 
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")

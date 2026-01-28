@@ -2,6 +2,7 @@ package com.wheezy.myjetpackproject.ViewModel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.wheezy.myjetpackproject.Data.Model.Booking
 import com.wheezy.myjetpackproject.Data.Model.FlightModel
 import com.wheezy.myjetpackproject.Data.Model.Seat
 import com.wheezy.myjetpackproject.Repository.PaymentRepository
@@ -52,7 +53,7 @@ class PaymentViewModel @Inject constructor(
                     _ephemeralKey.value = body.ephemeralKey
 
                     NotificationEventBus.sendNotificationEvent(
-                        message = "Payment prepared for booking $bookingId. Amount: \\$${amount / 100} USD",
+                        message = "Payment prepared for booking $bookingId. Amount: \$${amount / 100} USD",
                         isRead = false
                     )
                 }
@@ -62,6 +63,35 @@ class PaymentViewModel @Inject constructor(
                     isRead = false
                 )
             }
+            _loading.value = false
+        }
+    }
+
+    // Новый метод для BookingHistoryScreen
+    fun initiatePaymentForBooking(booking: Booking, flight: FlightModel) {
+        viewModelScope.launch {
+            _loading.value = true
+            val amount = calculateAmount(flight.price, booking.seatCount)
+
+            val response = paymentRepository.createPaymentSheet(
+                bookingId = booking.id,
+                amount = amount,
+                currency = "USD"
+            )
+
+            if (response.isSuccessful) {
+                response.body()?.let { body ->
+                    _clientSecret.value = body.paymentIntentClientSecret
+                    _customerId.value = body.customerId
+                    _ephemeralKey.value = body.ephemeralKey
+                }
+            } else {
+                NotificationEventBus.sendNotificationEvent(
+                    message = "Failed to prepare payment sheet for booking ${booking.id}",
+                    isRead = false
+                )
+            }
+
             _loading.value = false
         }
     }
@@ -96,8 +126,3 @@ class PaymentViewModel @Inject constructor(
     private fun calculateAmount(price: BigDecimal, seatCount: Int): Long =
         price.multiply(BigDecimal(seatCount)).multiply(BigDecimal(100)).longValueExact()
 }
-
-
-
-
-
