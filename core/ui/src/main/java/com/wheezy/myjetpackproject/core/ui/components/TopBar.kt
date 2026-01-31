@@ -20,7 +20,9 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.PlatformTextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
@@ -142,8 +144,16 @@ fun TopBar(
                         Text(
                             text = if (unreadCount > 9) "9+" else unreadCount.toString(),
                             fontSize = 10.sp,
+                            lineHeight = 10.sp,
                             color = Color.White,
-                            fontWeight = FontWeight.ExtraBold
+                            fontWeight = FontWeight.ExtraBold,
+                            textAlign = TextAlign.Center,
+                            style = LocalTextStyle.current.copy(
+                                platformStyle = PlatformTextStyle(
+                                    includeFontPadding = false
+                                )
+                            ),
+                            modifier = Modifier.wrapContentSize()
                         )
                     }
                 }
