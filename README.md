@@ -200,4 +200,3 @@ STRIPE_PUBLISHABLE_KEY=your_pk_test_key_here
 ## 🎬 Демонстрация работы
 
 👉 [Смотреть работу Android-клиента](https://drive.google.com/file/d/1_3nDUbc7Oi27V5FfLl2f7hPe9XIm7Yiu/view?usp=sharing)
->>>>>>> 9718cbf (Update README.md)
