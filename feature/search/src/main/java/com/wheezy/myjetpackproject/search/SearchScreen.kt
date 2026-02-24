@@ -2,14 +2,17 @@ package com.wheezy.myjetpackproject.feature.search
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import com.wheezy.myjetpackproject.core.model.LocationModel
+import com.wheezy.myjetpackproject.core.model.Notification
 import com.wheezy.myjetpackproject.core.model.ThemeOption
 import com.wheezy.myjetpackproject.core.model.User
 import com.wheezy.myjetpackproject.core.ui.R
@@ -21,10 +24,10 @@ import io.github.muddz.styleabletoast.StyleableToast
 @Composable
 fun SearchScreen(
     userState: User?,
-    locations: List<com.wheezy.myjetpackproject.core.model.LocationModel>,
+    locations: List<LocationModel>,
     classItems: List<String>,
     currentTheme: ThemeOption,
-    notifications: List<com.wheezy.myjetpackproject.core.model.Notification>,
+    notifications: List<Notification>,
     unreadCount: Int,
     isLoadingNotifications: Boolean,
     onThemeChanged: (ThemeOption) -> Unit,
@@ -37,8 +40,10 @@ fun SearchScreen(
     bottomBar: @Composable () -> Unit
 ) {
     val isLoadingLocations = locations.isEmpty()
+
     var from by remember { mutableStateOf("") }
     var to by remember { mutableStateOf("") }
+
     var classes by remember { mutableStateOf("") }
     var adultPassenger by remember { mutableStateOf("1") }
     var childPassenger by remember { mutableStateOf("0") }
@@ -48,6 +53,10 @@ fun SearchScreen(
 
     LaunchedEffect(Unit) {
         onFetchInitialData()
+    }
+
+    val locationNames = remember(locations) {
+        locations.map { it.name }
     }
 
     SideDrawer(
@@ -72,102 +81,102 @@ fun SearchScreen(
             },
             bottomBar = bottomBar
         ) { paddingValues ->
-            LazyColumn(
+            Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .background(MaterialTheme.colorScheme.background)
                     .padding(paddingValues)
+                    .verticalScroll(rememberScrollState())
             ) {
-                item {
-                    Column(
-                        modifier = Modifier
-                            .padding(32.dp)
-                            .background(
-                                color = MaterialTheme.colorScheme.surface,
-                                shape = RoundedCornerShape(20.dp)
-                            )
-                            .fillMaxWidth()
-                            .padding(24.dp)
-                    ) {
-                        val locationNames = locations.map { it.name }
-
-                        YellowTitle(text = "From")
-                        DropDownMenu(
-                            items = locationNames,
-                            loadingIcon = painterResource(id = R.drawable.from_ic),
-                            hint = "Select departure location",
-                            showLocationLoading = isLoadingLocations,
-                            onItemSelected = { from = it }
+                Column(
+                    modifier = Modifier
+                        .padding(32.dp)
+                        .background(
+                            color = MaterialTheme.colorScheme.surface,
+                            shape = RoundedCornerShape(20.dp)
                         )
+                        .fillMaxWidth()
+                        .padding(24.dp)
+                ) {
 
-                        Spacer(modifier = Modifier.height(16.dp))
+                    YellowTitle(text = "From")
+                    SearchableDropDownMenu(
+                        value = from,
+                        onValueChange = { from = it },
+                        items = locationNames,
+                        loadingIcon = painterResource(id = R.drawable.from_ic),
+                        hint = "Select departure location",
+                        showLocationLoading = isLoadingLocations
+                    )
 
-                        YellowTitle(text = "To")
-                        DropDownMenu(
-                            items = locationNames,
-                            loadingIcon = painterResource(id = R.drawable.from_ic),
-                            hint = "Select destination",
-                            showLocationLoading = isLoadingLocations,
-                            onItemSelected = { to = it }
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    YellowTitle(text = "To")
+                    SearchableDropDownMenu(
+                        value = to,
+                        onValueChange = { to = it },
+                        items = locationNames,
+                        loadingIcon = painterResource(id = R.drawable.from_ic),
+                        hint = "Select destination",
+                        showLocationLoading = isLoadingLocations
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    YellowTitle(text = "Passengers")
+                    Row(modifier = Modifier.fillMaxWidth()) {
+                        PassengerCounter(
+                            title = "Adult",
+                            modifier = Modifier.weight(1f),
+                            onItemSelected = { adultPassenger = it }
                         )
-
-                        Spacer(modifier = Modifier.height(16.dp))
-
-                        YellowTitle(text = "Passengers")
-                        Row(modifier = Modifier.fillMaxWidth()) {
-                            PassengerCounter(
-                                title = "Adult",
-                                modifier = Modifier.weight(1f),
-                                onItemSelected = { adultPassenger = it }
-                            )
-                            Spacer(modifier = Modifier.width(16.dp))
-                            PassengerCounter(
-                                title = "Child",
-                                modifier = Modifier.weight(1f),
-                                onItemSelected = { childPassenger = it }
-                            )
-                        }
-
-                        Spacer(modifier = Modifier.height(16.dp))
-
-                        Row {
-                            YellowTitle(text = "Departure Date", modifier = Modifier.weight(1f))
-                            Spacer(modifier = Modifier.width(16.dp))
-                            YellowTitle(text = "Return Date", modifier = Modifier.weight(1f))
-                        }
-                        DatePickerScreen(modifier = Modifier.weight(1f))
-
-                        Spacer(modifier = Modifier.height(16.dp))
-
-                        YellowTitle(text = "Class")
-                        DropDownMenu(
-                            items = classItems,
-                            loadingIcon = painterResource(id = R.drawable.seat_black_ic),
-                            hint = "Select class",
-                            showLocationLoading = isLoadingLocations,
-                            onItemSelected = { classes = it }
-                        )
-
-                        Spacer(modifier = Modifier.height(16.dp))
-
-                        GradientButton(
-                            onClick = {
-                                val numPassenger = (adultPassenger.toIntOrNull() ?: 0) +
-                                        (childPassenger.toIntOrNull() ?: 0)
-
-                                if (from.isNotBlank() && to.isNotBlank() && numPassenger > 0) {
-                                    onNavigateToResult(from, to, numPassenger)
-                                } else {
-                                    StyleableToast.makeText(
-                                        context,
-                                        "Please select valid locations and at least one passenger",
-                                        R.style.errorToast
-                                    ).show()
-                                }
-                            },
-                            text = "Search"
+                        Spacer(modifier = Modifier.width(16.dp))
+                        PassengerCounter(
+                            title = "Child",
+                            modifier = Modifier.weight(1f),
+                            onItemSelected = { childPassenger = it }
                         )
                     }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    Row {
+                        YellowTitle(text = "Departure Date", modifier = Modifier.weight(1f))
+                        Spacer(modifier = Modifier.width(16.dp))
+                        YellowTitle(text = "Return Date", modifier = Modifier.weight(1f))
+                    }
+                    DatePickerScreen(modifier = Modifier.weight(1f))
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    YellowTitle(text = "Class")
+                    DropDownMenu(
+                        items = classItems,
+                        loadingIcon = painterResource(id = R.drawable.seat_black_ic),
+                        hint = "Select class",
+                        showLocationLoading = isLoadingLocations,
+                        onItemSelected = { classes = it }
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    GradientButton(
+                        onClick = {
+                            val numPassenger = (adultPassenger.toIntOrNull() ?: 0) +
+                                    (childPassenger.toIntOrNull() ?: 0)
+
+                            if (from.isNotBlank() && to.isNotBlank() && numPassenger > 0) {
+                                onNavigateToResult(from, to, numPassenger)
+                            } else {
+                                StyleableToast.makeText(
+                                    context,
+                                    "Please select valid locations and at least one passenger",
+                                    R.style.errorToast
+                                ).show()
+                            }
+                        },
+                        text = "Search"
+                    )
                 }
             }
         }
