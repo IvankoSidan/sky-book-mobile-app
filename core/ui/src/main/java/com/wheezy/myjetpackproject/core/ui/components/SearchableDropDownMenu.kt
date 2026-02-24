@@ -19,7 +19,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.PopupProperties // ВАЖНЫЙ ИМПОРТ
+import androidx.compose.ui.window.PopupProperties
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
